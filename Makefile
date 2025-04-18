@@ -5,7 +5,7 @@ BINNAME=brainfuck
 all: build
 
 build: main.c
-	${CC} -o brainfuck main.c
+	${CC} -o brainfuck -std=c99 main.c
 
 clean: 
 	rm brainfuck
