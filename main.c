@@ -100,11 +100,6 @@ void compile_instruction(enum instruction inst, FILE *f) {
     }
 }
 
-void assemble() {
-    ASSEMBLE("a");
-    LINK("a");
-}
-
 void compile(const char *source, FILE *fasm) {
     compile_instruction(PROGRAM_START, fasm);
 
@@ -126,11 +121,7 @@ int main() {
         return -1;
     }
 
-    compile(">++++++++<+++++++++>-<>++++<+++++++>-<+++++++++++>>++++++<+++++++>-<++------------>++++++<+++++++++>-<+<++"
-            "+-------------->>>++++<++++++++>-<+",
-            fasm);
-
-    assemble();
+    compile("", fasm);
 
     return EXIT_SUCCESS;
 }
