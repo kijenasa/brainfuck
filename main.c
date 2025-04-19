@@ -5,6 +5,7 @@
 #include "config.h"
 
 enum instruction {
+    PROGRAM_START,
     POINTER_INCREMENT,
     POINTER_DECREMENT,
     CELL_INCREMENT,
@@ -17,13 +18,15 @@ enum instruction {
 };
 
 /* Lexer */
-enum instruction *lexer(const char *program) {
-    int len = strlen(program);
-    enum instruction *out = malloc(len + 1);
+enum instruction *lexer(const char *program, int *len) {
+    *len = strlen(program);
+    enum instruction *out = malloc(*len + 1);
+    out[0] = PROGRAM_START;
+    printf("PROGRAM_START\n");
 
     int i;
-    for(i = 0; i < len; i++) {
-        switch(program[i]) {
+    for(i = 1; i < *len; i++) {
+        switch(program[i - 1]) {
         case '>':
             out[i] = POINTER_INCREMENT;
             printf("POINTER_INCREMENT\n");
@@ -64,9 +67,13 @@ enum instruction *lexer(const char *program) {
     return out;
 }
 
-/* Assembly */
-void to_asm(enum instruction inst, FILE *f) {
+/* Compiling + Assembling */
+void compile_instruction(enum instruction inst, FILE *f) {
     switch(inst) {
+    case PROGRAM_START:
+        fprintf(f, HEADER_ASM);
+        fprintf(f, STACK_INIT_ASM);
+        break;
     case POINTER_INCREMENT:
         fprintf(f, POINTER_INCREMENT_ASM);
         break;
@@ -98,25 +105,33 @@ void to_asm(enum instruction inst, FILE *f) {
 }
 
 void assemble() {
-    system(ASSEMBLE_COMMAND);
-    system(LINK_COMMAND);
+    ASSEMBLE("a");
+    LINK("a");
 }
 
 /* Entry */
 int main(int argc, char *argv[]) {
+    char program_name[] = "a";
+
+    int len;
     enum instruction *program =
         lexer(">++++++++[<+++++++++>-]<.>++++[<+++++++>-]<+.+++++++..+++.>>++++++[<+++++++>-]<++.------------.>++++++[<"
-              "+++++++++>-]<+.<.+++.------.--------.>>>++++[<++++++++>-]<+.");
+              "+++++++++>-]<+.<.+++.------.--------.>>>++++[<++++++++>-]<+.",
+              &len);
+
+    FILE *fasm;
+    fasm = fopen("a.s", "w");
+    if(!fasm) {
+        puts("Failed to create file");
+        return -1;
+    }
+
+    for(int i = 0; i < len; i++) {
+        compile_instruction(program[i], fasm);
+    }
+
+    assemble();
 
     free(program);
-
-    //    FILE *out;
-    //    out = fopen(argv[1], "w");
-    //    if(out) {
-    //        fprintf(out, HEADER_ASM);
-    //        fprintf(out, STACK_INIT_ASM);
-    //        to_asm(POINTER_INCREMENT, out);
-    //        fprintf(out, STACK_CLEAN_ASM);
-    //    }
     return EXIT_SUCCESS;
 }

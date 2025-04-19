@@ -1,4 +1,2 @@
-#define ASSEMBLY_FILE_NAME "program.s"
-
-#define ASSEMBLE_COMMAND "as -o program.o program.s"
-#define LINK_COMMAND "ld -o program program.o"
+#define ASSEMBLE(program) system("as -o" program ".o " program ".s")
+#define LINK(program) system("ld -o " program " " program " .o")
