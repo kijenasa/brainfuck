@@ -15,21 +15,22 @@
     "# EXIT_ASM\n \
     mov rax, 60\n \
     mov rdi, 0\n \
-    syscall\n"
+    syscall\n\n"
 
 #define POINTER_INCREMENT_ASM                                                                                          \
     "# POINTER_INCREMENT_ASM\n \
     sub rbx, 1\n"
-
 #define POINTER_DECREMENT_ASM                                                                                          \
     "# POINTER_DECREMENT_ASM\n \
     add rbx, 1\n"
+
 #define CELL_INCREMENT_ASM                                                                                             \
     "# CELL_INCREMENT_ASM\n \
-    add [rbx], 1\n"
+    add byte ptr [rbx], 1\n"
 #define CELL_DECREMENT_ASM                                                                                             \
     "# CELL_DECREMENT_ASM\n \
-    sub [rbx], 1\n"
+    sub byte ptr [rbx], 1\n"
+
 #define CELL_OUTPUT_ASM                                                                                                \
     "# CELL_OUTPUT_ASM\n \
     mov rax, 1\n \
@@ -43,7 +44,6 @@
     mov rsi, rbx\n \
     mov rdx, 1\n"
 
-#define JUMP_OPEN_ASM ".%s:\n"
-#define JUMP_CLOSE_ASM                                                                                                 \
-    "cmp [rsp], 0\n \
-    je %s\n"
+#define JUMP_OPEN_ASM "\n"
+#define JUMP_CLOSE_ASM "cmp byte ptr [rsp], 0\n"
+//    je %s\n"
