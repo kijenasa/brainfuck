@@ -21,12 +21,9 @@ enum instruction {
 enum instruction *lexer(const char *program, int *len) {
     *len = strlen(program);
     enum instruction *out = malloc(*len + 1);
-    out[0] = PROGRAM_START;
-    printf("PROGRAM_START\n");
 
-    int i;
-    for(i = 1; i < *len; i++) {
-        switch(program[i - 1]) {
+    for(int i = 0; i < *len; i++) {
+        switch(program[i]) {
         case '>':
             out[i] = POINTER_INCREMENT;
             printf("POINTER_INCREMENT\n");
@@ -61,8 +58,6 @@ enum instruction *lexer(const char *program, int *len) {
             break;
         }
     }
-    out[i] = PROGRAM_END;
-    printf("PROGRAM_END\n");
 
     return out;
 }
@@ -93,13 +88,14 @@ void compile_instruction(enum instruction inst, FILE *f) {
         fprintf(f, CELL_INPUT_ASM);
         break;
     case JUMP_OPEN:
-        fprintf(f, JUMP_OPEN_ASM, "label_temp");
+        // fprintf(f, JUMP_OPEN_ASM, "label_temp");
         break;
     case JUMP_CLOSE:
-        fprintf(f, JUMP_CLOSE_ASM, "label_temp");
+        // fprintf(f, JUMP_CLOSE_ASM, "label_temp");
         break;
     case PROGRAM_END:
         fprintf(f, STACK_CLEAN_ASM);
+        fprintf(f, EXIT_ASM);
         break;
     }
 }
@@ -109,16 +105,20 @@ void assemble() {
     LINK("a");
 }
 
-/* Entry */
-int main(int argc, char *argv[]) {
-    char program_name[] = "a";
+void compile(const char *source, FILE *fasm) {
+    compile_instruction(PROGRAM_START, fasm);
 
     int len;
-    enum instruction *program =
-        lexer(">++++++++[<+++++++++>-]<.>++++[<+++++++>-]<+.+++++++..+++.>>++++++[<+++++++>-]<++.------------.>++++++[<"
-              "+++++++++>-]<+.<.+++.------.--------.>>>++++[<++++++++>-]<+.",
-              &len);
+    enum instruction *program = lexer(source, &len);
+    for(int i = 0; i < len; i++)
+        compile_instruction(program[i], fasm);
+    free(program);
 
+    compile_instruction(PROGRAM_END, fasm);
+}
+
+/* Entry */
+int main() {
     FILE *fasm;
     fasm = fopen("a.s", "w");
     if(!fasm) {
@@ -126,12 +126,11 @@ int main(int argc, char *argv[]) {
         return -1;
     }
 
-    for(int i = 0; i < len; i++) {
-        compile_instruction(program[i], fasm);
-    }
+    compile(">++++++++<+++++++++>-<>++++<+++++++>-<+++++++++++>>++++++<+++++++>-<++------------>++++++<+++++++++>-<+<++"
+            "+-------------->>>++++<++++++++>-<+",
+            fasm);
 
     assemble();
 
-    free(program);
     return EXIT_SUCCESS;
 }
