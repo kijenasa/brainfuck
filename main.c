@@ -113,15 +113,34 @@ void compile(const char *source, FILE *fasm) {
 }
 
 /* Entry */
-int main() {
+int main(int argc, char *argv[]) {
+    if(argc < 2) {
+        puts("Too few arguments");
+        return EXIT_FAILURE;
+    }
+
+    FILE *fsource;
+    fsource = fopen(argv[1], "r");
+    fseek(fsource, 0, SEEK_END);
+    int source_size = ftell(fsource);
+    rewind(fsource);
+
+    char *source = malloc(source_size + 1);
+    fread(source, source_size, 1, fsource);
+    fclose(fsource);
+
+    source[source_size] = '\0';
+
     FILE *fasm;
     fasm = fopen("a.s", "w");
     if(!fasm) {
         puts("Failed to create file");
-        return -1;
+        return EXIT_FAILURE;
     }
 
-    compile("", fasm);
+    compile(source, fasm);
 
+    fclose(fasm);
+    free(source);
     return EXIT_SUCCESS;
 }
