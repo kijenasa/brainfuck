@@ -40,16 +40,22 @@ _start:\n"
     mov rax, 1\n \
     mov rdi, 1\n \
     mov rsi, rbx\n \
-    mov rdx, 1\n"
+    mov rdx, 1\n \
+    syscall\n"
 #define CELL_INPUT_ASM                                                                                                 \
     "# CELL_INPUT_ASM\n \
     mov rax, 0\n \
     mov rdi, 1\n \
     mov rsi, rbx\n \
-    mov rdx, 1\n"
+    mov rdx, 1\n \
+    syscall\n"
 
-#define JUMP_OPEN_ASM "\n"
-#define JUMP_CLOSE_ASM "cmp byte ptr [rsp], 0\n"
-//    je %s\n"
+#define JUMP_OPEN_ASM                                                                                                  \
+    "# JUMP_OPEN_ASM\n \
+    _%d:\n"
+#define JUMP_CLOSE_ASM                                                                                                 \
+    "# JUMP_CLOSE_ASM\n \
+    cmp byte ptr [rbx], 0\n \
+    jne _%d\n"
 
 #endif

@@ -5,6 +5,7 @@
 #include "config.h"
 
 enum instruction {
+    SKIP,
     PROGRAM_START,
     POINTER_INCREMENT,
     POINTER_DECREMENT,
@@ -17,7 +18,12 @@ enum instruction {
     PROGRAM_END,
 };
 
+unsigned int label_stack[LABEL_STACK_SIZE] = {0};
+unsigned int label_stack_pointer = 0;
+unsigned int label_next = 0;
+
 /* Lexer */
+
 enum instruction *lexer(const char *program, int *len) {
     *len = strlen(program);
     enum instruction *out = malloc(*len + 1);
@@ -44,7 +50,7 @@ enum instruction *lexer(const char *program, int *len) {
             out[i] = CELL_OUTPUT;
             printf("CELL_OUTPUT\n");
             break;
-        case 'y':
+        case ',':
             out[i] = CELL_INPUT;
             printf("CELL_INPUT\n");
             break;
@@ -56,6 +62,9 @@ enum instruction *lexer(const char *program, int *len) {
             out[i] = JUMP_CLOSE;
             printf("JUMP_CLOSE\n");
             break;
+        default:
+            out[i] = SKIP;
+            break;
         }
     }
 
@@ -63,11 +72,38 @@ enum instruction *lexer(const char *program, int *len) {
 }
 
 /* Compiling + Assembling */
+
+int assign_label_name() {
+    if(label_next >= LABEL_STACK_SIZE) {
+        puts("Label stack overflow");
+        return -1;
+    }
+
+    label_stack[++label_stack_pointer] = label_next++;
+    printf("ASSIGNED LABEL %d\n", label_stack[label_stack_pointer]);
+    printf("STACKPOINTER: %d\n", label_stack_pointer);
+    return label_stack[label_stack_pointer];
+}
+
+int free_label_name() {
+    if(label_next <= 0) {
+        puts("Label stack underflow");
+        return -1;
+    }
+
+    printf("UNASSIGNED LABEL %d\n", label_stack[label_stack_pointer]);
+    printf("STACKPOINTER: %d\n", label_stack_pointer);
+    return label_stack[label_stack_pointer--];
+}
+
 void compile_instruction(enum instruction inst, FILE *f) {
     switch(inst) {
+    case SKIP:
+        break;
     case PROGRAM_START:
         fprintf(f, HEADER_ASM);
         fprintf(f, STACK_INIT_ASM);
+        puts("ADDING HEADER");
         break;
     case POINTER_INCREMENT:
         fprintf(f, POINTER_INCREMENT_ASM);
@@ -88,10 +124,10 @@ void compile_instruction(enum instruction inst, FILE *f) {
         fprintf(f, CELL_INPUT_ASM);
         break;
     case JUMP_OPEN:
-        // fprintf(f, JUMP_OPEN_ASM, "label_temp");
+        fprintf(f, JUMP_OPEN_ASM, assign_label_name());
         break;
     case JUMP_CLOSE:
-        // fprintf(f, JUMP_CLOSE_ASM, "label_temp");
+        fprintf(f, JUMP_CLOSE_ASM, free_label_name());
         break;
     case PROGRAM_END:
         fprintf(f, STACK_CLEAN_ASM);
@@ -125,11 +161,9 @@ int main(int argc, char *argv[]) {
     int source_size = ftell(fsource);
     rewind(fsource);
 
-    char *source = malloc(source_size + 1);
+    char *source = malloc(source_size);
     fread(source, source_size, 1, fsource);
     fclose(fsource);
-
-    source[source_size] = '\0';
 
     FILE *fasm;
     fasm = fopen("a.s", "w");
