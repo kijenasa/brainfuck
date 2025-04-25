@@ -115,7 +115,7 @@ void compile_instruction(enum instruction inst, FILE *f) {
         fprintf(f, CELL_INCREMENT_ASM);
         break;
     case CELL_DECREMENT:
-        fprintf(f, CELL_INCREMENT_ASM);
+        fprintf(f, CELL_DECREMENT_ASM);
         break;
     case CELL_OUTPUT:
         fprintf(f, CELL_OUTPUT_ASM);

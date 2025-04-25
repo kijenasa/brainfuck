@@ -14,3 +14,9 @@ install: all
 	mkdir -p ${DESTDIR}
 	cp -f ${BINNAME} ${DESTDIR}
 	chmod 755 ${DESTDIR}/${BINNAME}
+
+# Used for development
+asm:
+	./brainfuck test.bf
+	as -o a.o a.s
+	ld -o a a.o
