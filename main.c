@@ -20,7 +20,7 @@ enum instruction {
 
 unsigned int label_stack[LABEL_STACK_SIZE] = {0};
 unsigned int label_stack_pointer = 0;
-unsigned int label_next = 0;
+int label_next = 0;
 
 /* Lexer */
 
@@ -32,35 +32,27 @@ enum instruction *lexer(const char *program, int *len) {
         switch(program[i]) {
         case '>':
             out[i] = POINTER_INCREMENT;
-            printf("POINTER_INCREMENT\n");
             break;
         case '<':
             out[i] = POINTER_DECREMENT;
-            printf("POINTER_DECREMENT\n");
             break;
         case '+':
             out[i] = CELL_INCREMENT;
-            printf("CELL_INCREMENT\n");
             break;
         case '-':
             out[i] = CELL_DECREMENT;
-            printf("CELL_DECREMENT\n");
             break;
         case '.':
             out[i] = CELL_OUTPUT;
-            printf("CELL_OUTPUT\n");
             break;
         case ',':
             out[i] = CELL_INPUT;
-            printf("CELL_INPUT\n");
             break;
         case '[':
             out[i] = JUMP_OPEN;
-            printf("JUMP_OPEN\n");
             break;
         case ']':
             out[i] = JUMP_CLOSE;
-            printf("JUMP_CLOSE\n");
             break;
         default:
             out[i] = SKIP;
@@ -80,8 +72,6 @@ int assign_label_name() {
     }
 
     label_stack[++label_stack_pointer] = label_next++;
-    printf("ASSIGNED LABEL %d\n", label_stack[label_stack_pointer]);
-    printf("STACKPOINTER: %d\n", label_stack_pointer);
     return label_stack[label_stack_pointer];
 }
 
@@ -91,8 +81,6 @@ int free_label_name() {
         return -1;
     }
 
-    printf("UNASSIGNED LABEL %d\n", label_stack[label_stack_pointer]);
-    printf("STACKPOINTER: %d\n", label_stack_pointer);
     return label_stack[label_stack_pointer--];
 }
 
@@ -103,7 +91,6 @@ void compile_instruction(enum instruction inst, FILE *f) {
     case PROGRAM_START:
         fprintf(f, HEADER_ASM);
         fprintf(f, STACK_INIT_ASM);
-        puts("ADDING HEADER");
         break;
     case POINTER_INCREMENT:
         fprintf(f, POINTER_INCREMENT_ASM);
