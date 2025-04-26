@@ -13,6 +13,3 @@ Edit config.h as needed
 ```
 sudo make install
 ```
-```
-```
-```
