@@ -24,11 +24,29 @@ int label_next = 0;
 
 /* Lexer */
 
-enum instruction *lexer(const char *program, int *len) {
-    *len = strlen(program);
-    enum instruction *out = malloc(*len + 1);
+int get_program_length(const char *program) {
+    int len = 0;
+    for(int i = 0; i < (int)strlen(program); i++) {
+        switch(program[i]) {
+        case '>':
+        case '<':
+        case '+':
+        case '-':
+        case '.':
+        case ',':
+        case '[':
+        case ']':
+            len++;
+        }
+    }
 
-    for(int i = 0; i < *len; i++) {
+    return len;
+}
+
+enum instruction *lexer(const char *program, int len) {
+    enum instruction *out = malloc(len + 1);
+
+    for(int i = 0; i < len; i++) {
         switch(program[i]) {
         case '>':
             out[i] = POINTER_INCREMENT;
@@ -126,8 +144,8 @@ void compile_instruction(enum instruction inst, FILE *f) {
 void compile(const char *source, FILE *fasm) {
     compile_instruction(PROGRAM_START, fasm);
 
-    int len;
-    enum instruction *program = lexer(source, &len);
+    int len = get_program_length(source);
+    enum instruction *program = lexer(source, len);
     for(int i = 0; i < len; i++)
         compile_instruction(program[i], fasm);
     free(program);
